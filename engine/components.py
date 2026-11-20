@@ -70,6 +70,18 @@ def mascot(expr="normal", size=220, blink=False):
     return finish(im)
 
 
+# Varsayılan maskot: "Hakkı" — hukukçu baykuş. Eski robot için MASCOT = ("robot", None)
+MASCOT = ("pro", "baykus")
+
+
+def get_mascot(expr, size, blink):
+    kind, name = MASCOT
+    if kind == "pro":
+        from .mascots_pro import pro_mascot
+        return pro_mascot(name, expr, int(size * 1.05), blink)
+    return mascot(expr, size, blink)
+
+
 def draw_mascot(base, x, y, t, expr="normal", size=220, hop_t=None):
     """Nefes alma + göz kırpma + isteğe bağlı zıplama."""
     blink = (t % 3.1) < 0.12
@@ -79,7 +91,7 @@ def draw_mascot(base, x, y, t, expr="normal", size=220, hop_t=None):
         k = (t - hop_t) / 0.45
         bob -= math.sin(k * math.pi) * 38
         sq = 1 + 0.06 * math.sin(k * math.pi * 2)
-    spr = mascot(expr, size, blink)
+    spr = get_mascot(expr, size, blink)
     place(base, spr, x, y + bob, scale=sq)
 
 

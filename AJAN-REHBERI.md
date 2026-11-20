@@ -92,7 +92,7 @@ TTS.mp3 → silencedetect (≥0.7 sn sessizlik, -35 dB) → [(konuşma_başı, k
 | Pill | Tam yuvarlak etiket. Vurgu pill'i kırmızı zemin + beyaz yazı. |
 | Mühür | Eğik (−12°…+8°) kalın etiket. 2.2 kat büyükten "basılır". |
 | Altyazı | Kelime kelime: **aktif kelime = kırmızı pill**, söylenmişler = beyaz pill + siyah yazı, sıradakiler = soluk gri. Grup başına en fazla 3–4 kelime. |
-| Maskot | Kırmızı robot. İfadeler: normal / happy / shock / angry / wink. Nefes alır, göz kırpar, sahne başında zıplar. **İfade, cümlenin duygusuna göre seçilir.** |
+| Maskot | **"Hakkı" — hukukçu baykuş** (`engine/mascots_pro.py`, gözlüklü, siyah cübbe + kırmızı yaka, tokmaklı). Varsayılan `components.MASCOT = ("pro", "baykus")`. İfadeler: normal / happy / shock / angry / wink / point (tokmağı kaldırır). Nefes alır, göz kırpar, sahne başında zıplar. **İfade, cümlenin duygusuna göre seçilir:** risk→shock, haksızlık→angry, çözüm→happy, adım/kural→point, CTA→wink. |
 | İlerleme | En üstte ince kırmızı çubuk |
 | Sayaç pill'i (ops.) | Üstte sabit merak sayacı. Değeri video ilerledikçe açılır (ör. "?" → "3"). |
 
