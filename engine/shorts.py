@@ -22,7 +22,19 @@ class Beat:
 
 
 class Short:
-    def __init__(self, beats, top=None):
+    def __init__(self, beats, top=None, voice=None):
+        """voice: TTS dosyası (sahneler arası ~1 sn sessizlikli). Verilirse sahne süreleri sese kilitlenir."""
+        self.voice, self.voice_offset = voice, 0.0
+        spans = None
+        if voice:
+            from .voice import split_segments, fit_durations
+            segs = split_segments(voice)
+            if len(segs) != len(beats):
+                raise ValueError(f"Seste {len(segs)} bölüm bulundu, senaryoda {len(beats)} sahne var")
+            durs, self.voice_offset = fit_durations(segs, None)
+            for b, d in zip(beats, durs):
+                b.dur = d
+            spans = [b_ - a_ for a_, b_ in segs]
         self.beats = beats
         self.top = top
         self.starts = []
@@ -31,7 +43,13 @@ class Short:
             self.starts.append(acc)
             acc += b.dur
         self.duration = acc
-        self.caps = [Captions(b.caption, 0, b.dur, lead=0.0 if k == 0 else 0.1, max_chars=19) for k, b in enumerate(beats)]
+        # altyazı: ses varsa konuşma süresine, yoksa sahne süresine yayılır
+        self.caps = []
+        for k, b in enumerate(beats):
+            if spans:
+                self.caps.append(Captions(b.caption, 0, spans[k] + 0.15, lead=0.0, tail=0.0, max_chars=19))
+            else:
+                self.caps.append(Captions(b.caption, 0, b.dur, lead=0.0 if k == 0 else 0.1, max_chars=19))
 
     # ---------------------------------------------------------- ses olayları
     def events(self):
@@ -43,7 +61,8 @@ class Short:
                 ev.append((s, "impact", 1.0))
             ev.append((s + 0.02, "pop", 0.8))
             for ts in self.caps[i].word_starts():
-                ev.append((s + ts, "tick", 0.5))
+                if not self.voice:
+                    ev.append((s + ts, "tick", 0.5))
             for ts, name in b.sfx:
                 ev.append((s + ts, name, 1.0))
         return ev

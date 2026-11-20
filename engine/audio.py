@@ -165,17 +165,34 @@ def music_bed(duration, bpm=104, seed=3):
 
 
 # ---------------------------------------------------------------- miks
-def mix(duration, events, out_wav, music_gain=0.55, voice_path=None, duck=None):
-    """events: [(t, sfx_adı, kazanç_çarpanı)] ; duck: [(t0, t1)] müziğin kısılacağı aralıklar."""
+def load_voice(path):
+    """Herhangi bir ses dosyasını 48 kHz mono float diziye çevirir."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"],
+                         check=True, capture_output=True).stdout
+    return np.frombuffer(raw, np.float32).astype(np.float64)
+
+
+def mix(duration, events, out_wav, music_gain=0.0, voice_path=None, voice_offset=0.0, duck=None):
+    """events: [(t, sfx_adı, kazanç_çarpanı)]. Varsayılan: MÜZİK YOK. voice_path verilirse seslendirme eklenir."""
     n = int(duration * SR)
-    mus = music_bed(duration) * music_gain
-    if duck:
+    mus = music_bed(duration) * music_gain if music_gain > 0 else np.zeros(n)
+    if duck and music_gain > 0:
         g = np.ones(n)
         for a, b in duck:
-            i, j = int(a * SR), int(b * SR)
-            g[i:j] = 0.35
+            g[int(a * SR):int(b * SR)] = 0.35
         g = np.convolve(g, np.ones(int(0.15 * SR)) / int(0.15 * SR), "same")
         mus *= g
+    vo = np.zeros(n)
+    if voice_path:
+        v = load_voice(voice_path)
+        pk = np.max(np.abs(v)) or 1.0
+        v = v / pk * 0.8
+        i = int(voice_offset * SR)
+        if i < 0:            # ses, ilk konuşma t=0'a gelecek şekilde baştan kırpılır
+            v, i = v[-i:], 0
+        e = min(len(v), n - i)
+        vo[i:i + e] = v[:e]
+    sfx_scale = 0.6 if voice_path else 1.0  # konuşma varken efektler geri planda
     fx = np.zeros(n)
     cache = {}
     for t, name, gmul in events:
@@ -184,8 +201,8 @@ def mix(duration, events, out_wav, music_gain=0.55, voice_path=None, duck=None):
         if i >= n:
             continue
         e = min(len(x), n - i)
-        fx[i:i + e] += x[:e] * SFX_GAIN[name] * gmul
-    mixed = mus + fx
+        fx[i:i + e] += x[:e] * SFX_GAIN[name] * gmul * sfx_scale
+    mixed = vo + mus + fx
     mixed = np.tanh(mixed * 1.1) * 0.9
     st = np.stack([mixed, mixed], 1)
     pcm = (np.clip(st, -1, 1) * 32767).astype(np.int16)

@@ -13,6 +13,7 @@ from engine.shorts import Beat, Short, W, H
 from engine import audio
 
 OUT = os.environ.get("OUT_DIR", "out")
+VOICE = os.environ.get("VOICE")  # TTS dosyası (bölümler arası ~1 sn sessizlik)
 
 
 def S(v):
@@ -361,7 +362,7 @@ def build():
              [(0.5 + k / 6, "key") for k in range(3)] + [(1.4, "click"), (2.2, "ding")]),
         Beat(2.6, ("KAYDET,", "AİLENE GÖNDER"), "annene babana da *GÖNDER*", v_save, "happy", [(0.05, "pop2"), (0.25, "pop2")]),
     ]
-    sh = Short(beats, top=top_counter)
+    sh = Short(beats, top=top_counter, voice=VOICE)
     REVEAL_T = sh.starts[7] + 1.3
     return sh
 
@@ -370,7 +371,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     sh = build()
     print(f"süre: {sh.duration:.1f} sn")
-    wav = audio.mix(sh.duration, sh.events(), os.path.join(OUT, "short_audio.wav"), music_gain=0.5)
+    wav = audio.mix(sh.duration, sh.events(), os.path.join(OUT, "short_audio.wav"), voice_path=VOICE, voice_offset=sh.voice_offset)
     render(sh.frame, sh.duration, (W, H), os.path.join(OUT, "dikey_hat_sorgulama.mp4"), wav)
 
 

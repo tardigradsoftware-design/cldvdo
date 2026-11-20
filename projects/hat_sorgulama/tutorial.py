@@ -19,6 +19,7 @@ from engine import audio
 from short import comment_ui, doc_card
 
 OUT = os.environ.get("OUT_DIR", "out")
+VOICE = os.environ.get("VOICE")  # TTS dosyası (bölümler arası ~1 sn sessizlik)
 GREYT = (110, 110, 110, 255)
 LINE = (215, 215, 215, 255)
 
@@ -485,14 +486,14 @@ def build():
         Seg(8.0, s_cta, ["yoruma *HAT* yaz", "suç duyurusu *DİLEKÇESİNİ* göndereyim", "işine yaradıysa *ABONE OL*"],
             None, [(0.5 + k / 6, "key") for k in range(3)] + [(1.4, "click"), (2.2, "ding"), (5.55, "click"), (5.6, "ding")], "wink"),
     ]
-    return Tutorial(segs)
+    return Tutorial(segs, voice=VOICE)
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     tu = build()
     print(f"süre: {tu.duration:.1f} sn")
-    wav = audio.mix(tu.duration, tu.events(), os.path.join(OUT, "tutorial_audio.wav"), music_gain=0.45)
+    wav = audio.mix(tu.duration, tu.events(), os.path.join(OUT, "tutorial_audio.wav"), voice_path=VOICE, voice_offset=tu.voice_offset)
     render(tu.frame, tu.duration, (W, H), os.path.join(OUT, "yatay_hat_sorgulama.mp4"), wav)
 
 

@@ -90,7 +90,19 @@ class Seg:
 
 
 class Tutorial:
-    def __init__(self, segs):
+    def __init__(self, segs, voice=None):
+        """voice: TTS dosyası (bölümler arası ~1 sn sessizlik). Verilirse Seg süreleri sese kilitlenir.
+        Not: Seg içindeki animasyon zamanlamaları (daktilo, tık) sabit saniyelerdir; ses uzunsa
+        sahne sonunda bekler, kısaysa erken kesilmemesi için Seg.min_dur kullanılır."""
+        self.voice, self.voice_offset = voice, 0.0
+        if voice:
+            from .voice import split_segments, fit_durations
+            vsegs = split_segments(voice)
+            if len(vsegs) != len(segs):
+                raise ValueError(f"Seste {len(vsegs)} bölüm bulundu, senaryoda {len(segs)} bölüm var")
+            durs, self.voice_offset = fit_durations(vsegs, None)
+            for sg, d in zip(segs, durs):
+                sg.dur = d
         self.segs = segs
         self.starts = []
         acc = 0.0
