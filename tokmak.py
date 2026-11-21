@@ -46,10 +46,14 @@ def write_meta(row, tur, out):
         f.write(f"BAŞLIK:\n{row[title]}\n\nETİKETLER:\n{row[tags]}\n\nHASHTAG:\n{row[hashtags]}\n\nMETİN (TTS):\n{row[COLS[tur][0]]}\n")
 
 
-def render_plan(plan, out_dir, voice=None, preview=False):
+def render_plan(plan, out_dir, voice=None, preview=False, stil="kayit"):
     vid, tur = plan.get("id", "video"), "uzun" if plan["type"] == "long" else "shorts"
     total = voice_duration(voice) if voice else None
-    obj = scenes.build_long(plan, total=total) if plan["type"] == "long" else scenes.build_short(plan, total=total)
+    if plan["type"] == "long":
+        from engine.screencast import build_screencast
+        obj = build_screencast(plan, total=total) if stil == "kayit" else scenes.build_long(plan, total=total)
+    else:
+        obj = scenes.build_short(plan, total=total)
     size = (1920, 1080) if plan["type"] == "long" else (1080, 1920)
     base = os.path.join(out_dir, f"{vid}_{tur}")
     if preview:
@@ -84,11 +88,13 @@ def main():
     ap.add_argument("--ses")
     ap.add_argument("--hepsi", action="store_true")
     ap.add_argument("--cikti", default=os.path.join(ROOT, "out"))
+    ap.add_argument("--stil", choices=["kayit", "cizgi"], default="kayit",
+                    help="uzun video stili: kayit = gerçekçi ekran kaydı (varsayılan), cizgi = çizgi/kart stili")
     a = ap.parse_args()
     os.makedirs(a.cikti, exist_ok=True)
     if a.plan:
         plan = json.load(open(a.plan, encoding="utf-8"))
-        render_plan(plan, a.cikti, a.ses, a.onizleme)
+        render_plan(plan, a.cikti, a.ses, a.onizleme, a.stil)
         return
     rows = load_rows(a.csv)
     ids = list(rows) if a.hepsi else [a.id]
@@ -100,7 +106,7 @@ def main():
         write_meta(row, a.tur, os.path.join(a.cikti, f"{vid}_{a.tur}_bilgi.txt"))
         print(f"plan: {pj}")
         if not a.plan_yaz:
-            render_plan(plan, a.cikti, a.ses, a.onizleme)
+            render_plan(plan, a.cikti, a.ses, a.onizleme, a.stil)
 
 
 if __name__ == "__main__":

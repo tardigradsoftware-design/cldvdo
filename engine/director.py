@@ -331,16 +331,23 @@ def portal_actions(sents):
             acts.append({"s": si, "do": "submit", "label": "Kaydet" if "kaydet" in t else "Başvuruyu Gönder"})
     if not acts:
         acts.append({"s": 0, "do": "result", "rows": result_rows(" ".join(sents))})
-    if any(a["do"] == "search" for a in acts) and not any(a["do"] != "search" for a in acts):
+    q = next((a["text"] for a in acts if a["do"] == "search"), None)
+    if q:
+        for a in acts:
+            if a["do"] == "result":
+                a["rows"][0][0] = q[:30]
+    if q and not any(a["do"] != "search" for a in acts):
         si = max(a["s"] for a in acts)
-        acts.append({"s": min(si + 1, len(sents) - 1), "do": "result", "rows": result_rows(" ".join(sents[si:]))})
+        amt = amount_in(" ".join(sents[si:]))
+        acts.append({"s": min(si + 1, len(sents) - 1), "do": "result",
+                     "rows": [[q[:30], amt or "Görüntüle"], ["Geçmiş kayıtlar", "—"], ["Son güncelleme", "Bugün"]]})
     return acts
 
 
 def result_rows(s):
     amt = amount_in(s)
     kp = key_phrase(s, 3)
-    return [[kp[:28], amt or "✓ Var"], ["Diğer kayıtlar", "—"], ["Son güncelleme", "Bugün"]]
+    return [[kp[:28], amt or "Görüntüle"], ["Geçmiş kayıtlar", "—"], ["Son güncelleme", "Bugün"]]
 
 
 # ================================================================ PLAN (shorts)

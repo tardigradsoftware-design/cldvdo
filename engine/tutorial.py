@@ -90,7 +90,7 @@ class Seg:
 
 
 class Tutorial:
-    def __init__(self, segs, voice=None):
+    def __init__(self, segs, voice=None, mascot=True, captions=True, whoosh=0.8):
         """voice: TTS dosyası (bölümler arası ~1 sn sessizlik). Verilirse Seg süreleri sese kilitlenir.
         Not: Seg içindeki animasyon zamanlamaları (daktilo, tık) sabit saniyelerdir; ses uzunsa
         sahne sonunda bekler, kısaysa erken kesilmemesi için Seg.min_dur kullanılır."""
@@ -104,6 +104,7 @@ class Tutorial:
             for sg, d in zip(segs, durs):
                 sg.dur = d
         self.segs = segs
+        self.show_mascot, self.show_caps, self.whoosh = mascot, captions, whoosh
         self.starts = []
         acc = 0.0
         for s in segs:
@@ -129,7 +130,8 @@ class Tutorial:
         ev = []
         for i, (s, st) in enumerate(zip(self.segs, self.starts)):
             if i > 0:
-                ev.append((st - 0.08, "whoosh", 0.8))
+                if self.whoosh:
+                    ev.append((st - 0.08, "whoosh", self.whoosh))
             for ts, name in s.sfx:
                 ev.append((st + ts, name, 1.0))
         return ev
@@ -165,11 +167,13 @@ class Tutorial:
             place(img, p2, 80 + p1.width + 10 + p2.width / 2, 58, scale=k)
 
         # altyazı
-        for c in self.caps[i]:
-            c.draw(img, W / 2, 1012, lt, size=46)
+        if self.show_caps:
+            for c in self.caps[i]:
+                c.draw(img, W / 2, 1012, lt, size=46)
 
         # maskot
-        draw_mascot(img, 1810, 960, t, info.get("mascot", seg.mascot), 150)
+        if self.show_mascot and info.get("mascot", seg.mascot):
+            draw_mascot(img, 1810, 960, t, info.get("mascot", seg.mascot), 150)
 
         # ilerleme
         d = ImageDraw.Draw(img)

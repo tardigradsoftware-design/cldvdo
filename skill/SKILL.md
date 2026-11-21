@@ -20,6 +20,16 @@ pip install pillow numpy          # sistemde ffmpeg olmalı
 # klasör yapısı:  tokmak.py, engine/*.py, maskot/tokmak_maskot.py, senaryolar.csv
 ```
 
+## 1b) Stil
+- **Uzun video varsayılan stili: `kayit` (gerçekçi ekran kaydı).** Tam ekran tarayıcı, gerçekçi portal arayüzü, imleci takip
+  eden otomatik yakınlaşma, köşede küçük adım etiketi, gerekince bilgi notu kartı. **Karaoke altyazı ve büyük maskot YOK**
+  — zamanın çoğu portal ekranında geçer (verimli anlatım). Hedef görünüm: `docs__ornek_kayit_VID_001.jpg`.
+- Eski çizgi/kart stili gerekirse: `--stil cizgi`.
+- Shorts her zaman çizgi/kart stilindedir (hızlı tempo, altyazılı, maskotlu).
+
+## 1c) Görsel kontrol
+Sen görselleri görebiliyorsun: her videoda önce **GORSEL_KONTROL.md**'deki puanlama listesini uygula.
+
 ## 2) Tek komutla üretim (90% durumda yeterli)
 ```bash
 python3 tokmak.py --csv senaryolar.csv --id VID_001 --tur uzun     # uzun anlatım videosu
@@ -103,7 +113,8 @@ Ayrıca `*_kareler.jpg`'i hedef görünümlerle karşılaştır: `docs/hastane_k
 | `tokmak.py` | komut satırı: CSV → plan → render → QC |
 | `engine/director.py` | metni çözümler, sahne planı çıkarır (kurallar burada) |
 | `engine/scenes.py` | plan → hareketli sahneler (portal, telefon, belge, para, kart…) |
-| `engine/portals.py` | portal temaları + widget'lar (web/mobil) |
+| `engine/portals.py` | portal temaları + widget'lar (web/mobil) — shorts/çizgi stili |
+| `engine/screencast.py` | GERÇEKÇİ EKRAN KAYDI modu (uzun videolar, varsayılan) |
 | `engine/tutorial.py`, `engine/shorts.py` | yatay/dikey şablon (altyazı, bölüm etiketi, kamera, maskot) |
 | `engine/core.py`, `components.py`, `audio.py`, `voice.py` | motor |
 | `engine/qc.py` | kalite kontrol |

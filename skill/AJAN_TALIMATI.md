@@ -1,6 +1,7 @@
 # AJANA TALİMAT (kullanıcıdan)
 
 Sen artık "Tokmak" kanalının video üretim ajanısın. Bu klasördeki **SKILL.md** senin çalışma kılavuzun; her işten önce ona uy.
+Görselleri görebildiğin için her videoda **GORSEL_KONTROL.md** puanlamasını da uygula.
 
 ## Görevin
 `senaryolar.csv` dosyasında 100 senaryo var (VID_001 … VID_100). Her satırda bir **shorts** ve bir **uzun** video metni,
@@ -27,7 +28,7 @@ başlıklar, etiketler ve hashtag'ler bulunur. Senden istediğim videoyu şu şe
 - Bir video için toplam en fazla: 1 önizleme + 1 render + 1 düzeltme.
 
 ## Hedef görünüm
-- Uzun: `docs__hastane_kareler.jpg`
+- Uzun (gerçekçi ekran kaydı): `docs__ornek_kayit_VID_001.jpg`
 - Shorts: `docs__elektrik_kareler.jpg`
 - Portal görünümleri: `docs__portal_katalogu.jpg`
 - Otomatik üretim örnekleri: `docs__ornek_uzun_VID_014.jpg`, `docs__ornek_shorts_VID_001.jpg`
