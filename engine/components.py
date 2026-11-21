@@ -70,12 +70,21 @@ def mascot(expr="normal", size=220, blink=False):
     return finish(im)
 
 
-# Varsayılan maskot: "Hakkı" — hukukçu baykuş. Eski robot için MASCOT = ("robot", None)
-MASCOT = ("pro", "baykus")
+# Varsayılan maskot: TOKMAK (maskot/tokmak_maskot.py). Diğerleri: ("pro", "baykus"), ("robot", None)
+MASCOT = ("tokmak", "selam")
+_TOKMAK_MAP = {"happy": "mutlu", "shock": "saskin", "angry": "kizgin", "wink": "goz_kirp", "point": "ciddi"}
 
 
 def get_mascot(expr, size, blink):
     kind, name = MASCOT
+    if kind == "tokmak":
+        import os, sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "maskot"))
+        from tokmak_maskot import tokmak
+        poz = "selam"
+        if ":" in expr:
+            expr, poz = expr.split(":", 1)
+        return tokmak(_TOKMAK_MAP.get(expr, expr), poz, int(size * 1.15), blink)
     if kind == "pro":
         from .mascots_pro import pro_mascot
         return pro_mascot(name, expr, int(size * 1.05), blink)
