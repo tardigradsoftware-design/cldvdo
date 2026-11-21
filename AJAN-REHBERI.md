@@ -3,7 +3,7 @@
 > Bu rehber, **herhangi bir konudaki** seslendirmeyi (TTS) alıp onu viral potansiyeli yüksek bir videoya **kurgulamayı** öğretir.
 > Senaryo ve seslendirme kullanıcıdan gelir. Ajanın işi: **sesi sahnelere bölmek, her sahneye uygun görseli çizmek, hareket, altyazı ve efektlerle sesi görselleştirmek.**
 > **Arka plan müziği YOK.** Ses = seslendirme + çok hafif efektler.
-> Motor kodu: GitHub `tardigradsoftware-design/cldvdo` (dal `ccr-411bd5c8-aqf2b8`) → `engine/` klasörü. `projects/hat_sorgulama/` yalnızca ÖRNEKTİR.
+> Motor kodu: GitHub `tardigradsoftware-design/cldvdo` (dal `ccr-411bd5c8-aqf2b8`) → `engine/` klasörü. `projects/elektrik/short.py` EN GÜNCEL ÖRNEKTİR (dikey); `projects/hat_sorgulama/` yatay örnek içerir.
 
 ---
 
@@ -92,7 +92,7 @@ TTS.mp3 → silencedetect (≥0.7 sn sessizlik, -35 dB) → [(konuşma_başı, k
 | Pill | Tam yuvarlak etiket. Vurgu pill'i kırmızı zemin + beyaz yazı. |
 | Mühür | Eğik (−12°…+8°) kalın etiket. 2.2 kat büyükten "basılır". |
 | Altyazı | Kelime kelime: **aktif kelime = kırmızı pill**, söylenmişler = beyaz pill + siyah yazı, sıradakiler = soluk gri. Grup başına en fazla 3–4 kelime. |
-| Maskot | **"Hakkı" — hukukçu baykuş** (`engine/mascots_pro.py`, gözlüklü, siyah cübbe + kırmızı yaka, tokmaklı). Varsayılan `components.MASCOT = ("pro", "baykus")`. İfadeler: normal / happy / shock / angry / wink / point (tokmağı kaldırır). Nefes alır, göz kırpar, sahne başında zıplar. **İfade, cümlenin duygusuna göre seçilir:** risk→shock, haksızlık→angry, çözüm→happy, adım/kural→point, CTA→wink. |
+| Maskot | **TOKMAK** (`maskot/tokmak_maskot.py`, kanalın resmî maskotu). Varsayılan `components.MASCOT = ("tokmak", "selam")`. Beat maskot alanına ifade yazılır; poz için `"ifade:poz"` (ör. `"ciddi:isaret"`, `"heyecanli:kutlama"`). İfadeler: normal, mutlu, kahkaha, saskin, kizgin, uzgun, goz_kirp, dusunceli, ciddi, endiseli, heyecanli, uykulu. Pozlar: selam, isaret, kutlama, duz. **Duyguya göre:** risk→saskin/endiseli, haksızlık→kizgin, çözüm→mutlu/heyecanli:kutlama, kural/adım→ciddi:isaret, soru→dusunceli, CTA→goz_kirp. |
 | İlerleme | En üstte ince kırmızı çubuk |
 | Sayaç pill'i (ops.) | Üstte sabit merak sayacı. Değeri video ilerledikçe açılır (ör. "?" → "3"). |
 
