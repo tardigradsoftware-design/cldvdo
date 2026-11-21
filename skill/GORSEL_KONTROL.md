@@ -34,3 +34,7 @@ ve önizlemeyi BİR KEZ daha al. Sonra render'a geç. (Kendini sonsuz düzeltme 
 ## Kesin yasaklar (görürsen düzelt)
 - "T.C." başlığı, gerçek kurum logosu, gerçek alan adı (…gov.tr) → YASAK
 - Maskelenmemiş kişisel veri (gerçek isim, TC, IBAN) → YASAK
+
+## Görsel zayıfsa ne yaparım?
+Çizim kodu YAZMA. Plan JSON'unda sadece ikon/şablon adını değiştir (bkz. `docs__ikon_kutuphanesi.jpg`, `docs__sablon_katalogu.jpg`).
+Örn. araba konusu ama ikon "onay" → `"icon": "araba"`; tutar geçen cümle "not" ise → `"sablon": "sayac"`.

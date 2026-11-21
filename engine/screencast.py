@@ -373,8 +373,12 @@ def note_card(text, icon="i", accent=(239, 68, 68, 255), chips=()):
         d.rounded_rectangle([S(10 - k / 2), S(10 + k / 2), S(w + 10 + k / 2), S(h + 10 + k)], S(22), fill=(0, 0, 0, 8))
     d.rounded_rectangle([S(10), S(10), S(w + 10), S(h + 10)], S(20), fill=WHITE)
     d.rounded_rectangle([S(10), S(10), S(20), S(h + 10)], S(4), fill=accent)
-    d.ellipse([S(44), S(40), S(104), S(100)], fill=accent)
-    txt(d, (74, 70), icon, "bold", 30, WHITE, "mm")
+    from .assets import ICONS, icon as lib_icon
+    if icon in ICONS:
+        im.alpha_composite(lib_icon(icon, S(76), False), (S(36), S(32)))
+    else:
+        d.ellipse([S(44), S(40), S(104), S(100)], fill=accent)
+        txt(d, (74, 70), icon, "bold", 30, WHITE, "mm")
     for i, ln in enumerate(lines):
         txt(d, (128, 40 + i * 54), ln, "bold", 36, INK)
     if chips:
@@ -395,6 +399,13 @@ def good_chips(s):
 
 
 def icon_char(s):
+    """(kütüphane ikon adı, vurgu rengi) — ikonlar engine/assets.py'den gelir."""
+    from .assets import icon_for_text
+    c = _icon_col(s)[1]
+    return icon_for_text(s, "onay"), c
+
+
+def _icon_col(s):
     t = s.lower()
     if amount_in(s) or any(k in t for k in ("para", "ücret", "ödeme", " tl")):
         return "₺", (22, 163, 74, 255)
@@ -650,8 +661,19 @@ def draw_mobile(world, t, d, sc, spr, boxes, active, theme, title):
 
 def make_note(sc, dur, bg_fn=None):
     """Portal dışı cümleler: son ekranın bulanık görüntüsü üzerinde bilgi notu kartları."""
+    from .templates import auto_template, draw_template
     sents = sc.get("sentences", [])
     ts, ds = sent_times(sents, dur)
+    given = sc.get("notlar") or []
+    tpls = []
+    for i, s in enumerate(sents):
+        g = given[i] if i < len(given) and given[i] else None
+        if g:
+            g = dict(g)
+            tpls.append((g.pop("sablon", "not"), g))
+        else:
+            tpls.append(auto_template(s, key_phrase(s, 8), list(good_chips(s)), amount_in(s)))
+    sc["notlar"] = [dict(sablon=n, **p) for n, p in tpls]   # plan JSON'una yazılır → ajan düzenleyebilir
 
     def draw(world, t, d):
         if bg_fn:
@@ -659,11 +681,8 @@ def make_note(sc, dur, bg_fn=None):
         else:
             world.alpha_composite(gradient_bg("edevlet"), (0, 0))
         i = max(k for k in range(len(ts)) if ts[k] <= t)
-        s = sents[i]
-        ic, col = icon_char(s)
-        nc = note_card(key_phrase(s, 8), ic, col, good_chips(s))
-        k = out_back(clamp((t - ts[i]) / 0.45), 1.3)
-        place(world, nc, W / 2, H / 2 + (1 - k) * 60, scale=1.15 + 0.1 * k, alpha=clamp((t - ts[i]) / 0.3))
+        name, prm = tpls[i]
+        draw_template(world, t - ts[i], ds[i], name, prm)
         return {"cam": live(t)}
     return draw, [(ts[i] + 0.05, "pop") for i in range(len(ts))]
 

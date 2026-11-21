@@ -56,6 +56,8 @@ def render_plan(plan, out_dir, voice=None, preview=False, stil="kayit"):
         obj = scenes.build_short(plan, total=total)
     size = (1920, 1080) if plan["type"] == "long" else (1080, 1920)
     base = os.path.join(out_dir, f"{vid}_{tur}")
+    # otomatik seçilen şablon/ikonlar plana yazılsın (ajan düzenleyebilsin)
+    json.dump(plan, open(base + "_plan.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if preview:
         from PIL import Image
         ts = [obj.starts[i] + obj.segs[i].dur * f if plan["type"] == "long" else obj.starts[i] + obj.beats[i].dur * f

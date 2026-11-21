@@ -275,7 +275,8 @@ def icon_for(s):
         return "doc"
     if any(k in t for k in ("kanun", "yönetmelik", "tebliğ", "madde", "yargıtay", "mahkeme")):
         return "law"
-    return "check"
+    from .assets import icon_for_text
+    return icon_for_text(s, "check")   # kütüphaneden konuya uygun ikon (ev, araba, kart…)
 
 
 def wrap(text, n):

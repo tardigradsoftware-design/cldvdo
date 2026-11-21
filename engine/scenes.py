@@ -77,6 +77,11 @@ def key_xy(px, py, k):
 
 @lru_cache(maxsize=64)
 def icon_big(kind, size=260):
+    if kind not in ("warn", "check", "money", "calendar", "doc", "law"):
+        from .assets import ICONS, icon
+        if kind in ICONS:                       # hazır ikon kütüphanesi (docs/ikon_kutuphanesi.jpg)
+            return icon(kind, int(size * 0.9))
+        kind = "check"
     im, d = canvas(size, size)
     s = size / 260
     if kind == "warn":

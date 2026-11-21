@@ -77,11 +77,16 @@ class Short:
 
         # başlık
         l1, l2 = b.title
-        t1 = text_sprite(upper_tr(l1), "black", 92, INK)
+        sz1 = 92
+        while True:
+            t1 = text_sprite(upper_tr(l1), "black", sz1, INK)
+            if t1.width <= W - 110 or sz1 <= 50:
+                break
+            sz1 -= 6
         t2 = None
         if l2:
             sz = 112
-            while sz > 60:
+            while sz > 48:
                 t2 = text_sprite(upper_tr(l2), "black", sz, RED)
                 if t2.width <= W - 110:
                     break

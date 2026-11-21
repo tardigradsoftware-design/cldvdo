@@ -90,10 +90,33 @@ isverenlik, eposta, sabim. Görünüm: `docs/portal_katalogu.jpg`. Yeni portal: 
 ```
 Bir cümleye birden fazla eylem bağlanabilir (cümle süresine bölünür). Kamera her eylemde ilgili alana otomatik yakınlaşır.
 
+### Hazır görsel kütüphanesi — ÇİZİM YAPMA, ADIYLA SEÇ
+Asla yeni çizim/şekil kodu yazma. Görsel gerekiyorsa kütüphaneden adını yaz:
+- **İkonlar (53 adet):** `docs__ikon_kutuphanesi.jpg` → ev, tapu, araba, kart, kimlik, belge, telefon, banka, takvim, kalkan,
+  kilit, para, fis, koli, kisi, aile, sirket, tokmak, saat, sms, hastane, okul, sepet, imza, yasak, uyari, onay, red, terazi …
+  Kullanım: shorts beat'inde `"icon": "araba"`, not şablonlarında `"ikon": "araba"`.
+- **Sahne şablonları (8 adet, uzun video):** `docs__sablon_katalogu.jpg`. Portal dışındaki bilgi notu ekranlarında
+  her cümle için `notlar` listesinde bir öğe bulunur; otomatik seçilir, beğenmezsen sadece adını/parametresini değiştir:
+```json
+"notlar": [
+ {"sablon": "not",           "metin": "Bankalar 10 yıl sonra parayı devlete aktarır", "ikon": "banka", "etiketler": ["10 yıl"]},
+ {"sablon": "sayac",         "deger": "12.450 TL", "metin": "Ortalama alacak"},
+ {"sablon": "karsilastirma", "sol_baslik": "YANLIŞ", "sol": ["Sözlü şikâyet"], "sag_baslik": "DOĞRU", "sag": ["Yazılı başvuru"]},
+ {"sablon": "zaman",         "adimlar": ["Bugün", "15 gün", "30 gün"], "metin": "Cevap süresi"},
+ {"sablon": "liste",         "metin": "Hazırlaman gerekenler", "maddeler": ["Kimlik", "Fatura", "Dekont"]},
+ {"sablon": "akis",          "kutular": ["Sen", "Satıcı", "Hakem Heyeti"], "metin": "Başvuru sırası"},
+ {"sablon": "uyari",         "metin": "Süreyi kaçırırsan hakkın düşer", "alt": "Zamanaşımı 2 yıl"},
+ {"sablon": "yasak",         "metin": "İşveren maaşından kesinti yapamaz", "ikon": "para"}
+]
+```
+Seçim kuralı: tutar/yüzde → sayac · süre/gün → zaman · 3+ belge/madde → liste · kurumlar arası süreç → akis ·
+"yapamaz/asla" → yasak · risk/ceza → uyari · "X yerine Y" → karsilastirma · diğer → not.
+Metinler kısa olsun (not/uyari/yasak ≤ 8 kelime, madde ≤ 4 kelime).
+
 ### Shorts: `beats` listesi — her beat bir dict
 `kind`: hook | card | money | phone | document | portal | comment ;
 alanlar: `sentence` (altyazı), `title` ([siyah satır, kırmızı satır] — EN ÇOK düzenlenen alan), `chips`, `stamp`, `icon`
-(warn/money/calendar/doc/law/check), `mascot`, `word` (comment için yorum kelimesi), `query`/`theme` (portal için), `amount`, `number`.
+(warn/money/calendar/doc/law/check **veya kütüphaneden herhangi bir ikon adı**), `mascot`, `word` (comment için yorum kelimesi), `query`/`theme` (portal için), `amount`, `number`.
 
 ### Maskot ifadeleri (Tokmak)
 normal, mutlu, kahkaha, saskin, kizgin, uzgun, goz_kirp, dusunceli, ciddi, endiseli, heyecanli, uykulu ; poz eki `:selam|:isaret|:kutlama|:duz`
@@ -117,5 +140,7 @@ Ayrıca `*_kareler.jpg`'i hedef görünümlerle karşılaştır: `docs/hastane_k
 | `engine/screencast.py` | GERÇEKÇİ EKRAN KAYDI modu (uzun videolar, varsayılan) |
 | `engine/tutorial.py`, `engine/shorts.py` | yatay/dikey şablon (altyazı, bölüm etiketi, kamera, maskot) |
 | `engine/core.py`, `components.py`, `audio.py`, `voice.py` | motor |
+| `engine/assets.py` | ikon kütüphanesi (`python3 -m engine.assets` → katalog) |
+| `engine/templates.py` | sahne şablonları (`python3 -m engine.templates` → katalog) |
 | `engine/qc.py` | kalite kontrol |
 | `maskot/tokmak_maskot.py` | maskot (12 ifade × 4 poz) |
