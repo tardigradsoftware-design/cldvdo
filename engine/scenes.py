@@ -182,7 +182,14 @@ def sub_button(state):
     return pill("ABONE OLUNDU ✓", "black", 64, INK, (225, 225, 225, 255), border=5, pad=(44, 22), shadow=8)
 
 
+_ALIGNED = {}   # tuple(cümleler) → sahne içi başlangıçlar (seslendirmeye hizalı); build_* doldurur
+
+
 def sentence_times(sents, dur):
+    al = _ALIGNED.get(tuple(sents))
+    if al:
+        ts = list(al)
+        return ts, [(ts[k + 1] if k + 1 < len(ts) else dur) - ts[k] for k in range(len(ts))]
     est = [sdur(s) for s in sents] or [dur]
     k = dur / sum(est)
     ts, acc = [], 0.0
@@ -662,18 +669,29 @@ def build_long(plan, voice=None, total=None):
 
 
 # ================================================================ SHORTS
-def build_short(plan, total=None):
+def build_short(plan, total=None, voice=None, live=True):
     from .shorts import Beat, Short
     beats = []
     durs = [max(1.8, sdur(b["sentence"])) for b in plan["beats"]]
-    if total:
+    if voice:
+        from .voice import align, duration
+        st = align(voice, [b["sentence"] for b in plan["beats"]])
+        total = duration(voice)
+        st[0] = 0.0
+        durs = [st[k + 1] - st[k] for k in range(len(st) - 1)] + [total + 0.4 - st[-1]]
+    elif total:
         k = total / sum(durs)
         durs = [d * k for d in durs]
     for i, (b, d) in enumerate(zip(plan["beats"], durs)):
         vis, sfx = SHORT_VIS[b["kind"]](b, d)
         t1, t2 = (b.get("title") or ["", ""])[:2]
         beats.append(Beat(d, (t1, t2), emphasize(b["sentence"]), vis, b.get("mascot", "ciddi"), sfx, punch=(i == 0)))
-    return Short(beats)
+    sh = Short(beats)
+    if live:
+        from .live_mascot import LiveMascot, SPOTS_SHORT
+        cues = [(sh.starts[i], b.get("mascot", "ciddi")) for i, b in enumerate(plan["beats"])]
+        sh.live = LiveMascot(cues, SPOTS_SHORT[:3], 240, voice=voice, duration=sh.duration, center_x=540)
+    return sh
 
 
 def sv_card(b, d):

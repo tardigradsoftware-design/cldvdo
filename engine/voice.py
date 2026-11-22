@@ -47,3 +47,55 @@ def speech_spans(segs, offset):
     for k, (a, b) in enumerate(segs):
         out.append((0.0, b - a))
     return out
+
+
+# ---------------------------------------------------------------- dudak senkronu + cümle hizalama
+def _pcm(path, sr=16000):
+    import numpy as np
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", str(sr), "-f", "s16le", "-"],
+                         capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.int16).astype(np.float32) / 32768.0
+
+
+def envelope(path, fps=100):
+    """Ses gücü eğrisi (0..1), saniyede `fps` örnek."""
+    import numpy as np
+    x = _pcm(path)
+    hop = 16000 // fps
+    n = len(x) // hop
+    rms = np.sqrt((x[:n * hop].reshape(n, hop) ** 2).mean(1) + 1e-9)
+    db = 20 * np.log10(rms)
+    return np.clip((db + 45) / 30, 0, 1)
+
+
+def align(path, units, weight=None):
+    """Metin birimlerini (cümle/beat) sese hizalar → her birimin başlangıç saniyesi.
+    Yöntem: konuşma süresi harf sayısına göre bölünür, her sınır ±0,8 sn içindeki en sessiz ana kaydırılır."""
+    import numpy as np
+    env = envelope(path)
+    fps = 100
+    sm = np.convolve(env, np.ones(9) / 9, mode="same")
+    talk = sm > 0.12
+    idx = np.where(talk)[0]
+    if not len(idx):
+        return [0.0] * len(units)
+    s0, s1 = idx[0] / fps, idx[-1] / fps
+    # konuşma zamanı ekseni (uzun sessizlikler sayılmaz)
+    cum = np.cumsum(talk) / fps
+    w = [max(1, len(u.replace(" ", ""))) for u in units] if weight is None else weight
+    tot = sum(w)
+    starts, acc = [s0], 0
+    for k in range(len(units) - 1):
+        acc += w[k]
+        target = acc / tot * cum[-1]
+        t_est = int(np.searchsorted(cum, target))
+        lo, hi = max(t_est - 80, int(starts[-1] * fps) + 30), min(t_est + 80, len(sm) - 1)
+        if hi <= lo:
+            starts.append(t_est / fps)
+            continue
+        j = lo + int(np.argmin(sm[lo:hi] + np.abs(np.arange(lo, hi) - t_est) / 80 * 0.15))
+        # sessizliğin sonuna (bir sonraki konuşmanın başına) kaydır
+        while j < len(sm) - 1 and sm[j] < 0.12 and j < hi + 40:
+            j += 1
+        starts.append(j / fps)
+    return starts

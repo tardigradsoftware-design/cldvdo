@@ -109,7 +109,10 @@ class Short:
         self.caps[i].draw(img, 540, 1365, lt, size=60)
 
         # maskot
-        draw_mascot(img, 540, 1610, t, b.mascot, 210, hop_t=0.0 if lt < 0.5 else None)
+        if getattr(self, "live", None):
+            self.live.draw(img, t)          # canlı maskot: konuşur, yer değiştirir
+        else:
+            draw_mascot(img, 540, 1610, t, b.mascot, 210, hop_t=0.0 if lt < 0.5 else None)
 
         # üst sayaç
         if self.top:

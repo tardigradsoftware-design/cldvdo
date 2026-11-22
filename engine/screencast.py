@@ -740,16 +740,37 @@ def make_outro(sc, dur):
     return draw, [(tc_, "click"), (tc_ + 0.05, "ding")]
 
 
-def build_screencast(plan, total=None):
-    """Plan → gerçekçi ekran kaydı tarzı Tutorial (altyazı yok, maskot sadece kapanışta)."""
-    from .scenes import sdur, MIN_DUR
+def build_screencast(plan, total=None, voice=None, live=True):
+    """Plan → gerçekçi ekran kaydı tarzı Tutorial (altyazı yok). live=True: konuşan, gezinen canlı maskot."""
+    from .scenes import sdur, MIN_DUR, _ALIGNED
     scenes = plan["scenes"]
     durs = []
     for sc in scenes:
         d = sum(sdur(s) for s in sc.get("sentences", [])) or 3.0
         mn = {"hook": 3.6, "overview": 2.2 + 0.4 * len(sc.get("steps", [])), "portal": 4.0, "outro": 3.6}.get(sc["kind"], 2.0)
         durs.append(max(mn, d))
-    if total:
+    sent_abs = None
+    if voice:   # sahne ve cümle süreleri seslendirmeye kilitlenir
+        from .voice import align, duration
+        units = [(i, s) for i, sc in enumerate(scenes) for s in sc.get("sentences", [])]
+        st = align(voice, [s for _, s in units])
+        st[0] = 0.0
+        total = duration(voice)
+        first = {}
+        for (i, _), t0 in zip(units, st):
+            first.setdefault(i, t0)
+        bounds = [first.get(i) for i in range(len(scenes))]
+        for i in range(len(bounds)):
+            if bounds[i] is None:
+                bounds[i] = bounds[i - 1] if i else 0.0
+        bounds.append(total + 0.6)
+        durs = [max(0.8, bounds[i + 1] - bounds[i]) for i in range(len(scenes))]
+        for i, sc in enumerate(scenes):
+            rel = [t0 - bounds[i] for (j, _), t0 in zip(units, st) if j == i]
+            if rel:
+                _ALIGNED[tuple(sc["sentences"])] = rel
+        sent_abs = list(zip(st, [i for i, _ in units]))
+    elif total:
         k = total / sum(durs)
         durs = [d * k for d in durs]
     segs, last_bg = [], [None]
@@ -795,6 +816,21 @@ def build_screencast(plan, total=None):
             a = clamp((t - tu.starts[i]) / 0.35) if first else 1.0
             sl = step_label(*lab)
             place(img, sl, 32, H - 32 - sl.height + (1 - a) * 20, anchor="tl", alpha=a)
+        if lm:
+            lm.draw(img, t)
         return img
+    lm = None
+    if live:
+        from .live_mascot import LiveMascot, SPOTS_LONG
+        cues = []
+        for i, sc in enumerate(scenes):
+            sents = sc.get("sentences", []) or [""]
+            ms = sc.get("mascot") or ["ciddi"]
+            if isinstance(ms, str):
+                ms = [ms]
+            ts, _ = sent_times(sents, durs[i])
+            for k, t0 in enumerate(ts):
+                cues.append((tu.starts[i] + t0, ms[min(k, len(ms) - 1)]))
+        lm = LiveMascot(cues, SPOTS_LONG, 230, voice=voice, duration=tu.duration, center_x=W / 2)
     tu.frame = frame
     return tu

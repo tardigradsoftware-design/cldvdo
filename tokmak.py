@@ -51,9 +51,9 @@ def render_plan(plan, out_dir, voice=None, preview=False, stil="kayit"):
     total = voice_duration(voice) if voice else None
     if plan["type"] == "long":
         from engine.screencast import build_screencast
-        obj = build_screencast(plan, total=total) if stil == "kayit" else scenes.build_long(plan, total=total)
+        obj = build_screencast(plan, voice=voice) if stil == "kayit" else scenes.build_long(plan, total=total)
     else:
-        obj = scenes.build_short(plan, total=total)
+        obj = scenes.build_short(plan, voice=voice)
     size = (1920, 1080) if plan["type"] == "long" else (1080, 1920)
     base = os.path.join(out_dir, f"{vid}_{tur}")
     # otomatik seçilen şablon/ikonlar plana yazılsın (ajan düzenleyebilsin)

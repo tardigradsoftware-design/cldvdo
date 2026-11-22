@@ -154,6 +154,28 @@ def _kas(p, lx, rx, y, tip):
         p.line([(rx - 11, y - 3), (rx + 13, y)], INK, 6)
 
 
+def _konus(p, x, y, seviye, ifade):
+    """Konuşurken ağız: seviye 1..3 (sesin gücüne göre açıklık). Duyguya göre biçim değişir."""
+    h = (4, 9, 15)[seviye - 1]
+    if ifade in ("mutlu", "kahkaha", "heyecanli", "goz_kirp"):
+        w = 16 + seviye * 2
+        p.chord((x - w, y - 8, x + w, y + 4 + h * 0.95), 0, 180, MOUTH)
+        if seviye > 1:
+            p.chord((x - w * 0.55, y + h * 0.3, x + w * 0.55, y + 2 + h * 0.95), 0, 180, TONGUE, ol=False)
+    elif ifade == "kizgin":
+        w = 17
+        p.rr((x - w, y - 4, x + w, y + 6 + h), 5, MOUTH)
+        p.rr((x - w + 3, y - 2, x + w - 3, y + 4), 2, WHITE, ol=False)
+    elif ifade in ("uzgun", "endiseli"):
+        w = 9 + seviye * 2
+        p.ell((x - w, y - 2, x + w, y + 4 + h), MOUTH)
+    else:
+        w = 11 + seviye * 3
+        p.ell((x - w, y - 4, x + w, y + 2 + h), MOUTH)
+        if seviye > 1:
+            p.chord((x - w * 0.6, y + h * 0.35, x + w * 0.6, y + 2 + h), 0, 180, TONGUE, ol=False)
+
+
 def _agiz(p, x, y, tip):
     if tip == "gulumse":
         p.arc((x - 14, y - 10, x + 14, y + 8), 30, 150, INK, 6)
@@ -226,7 +248,7 @@ def _kol(p, x0, y0, x1, y1):
     p.ell((x1 - 12, y1 - 12, x1 + 12, y1 + 12), WOOD)
 
 
-def _ciz(p, ifade, poz, kirp):
+def _ciz(p, ifade, poz, kirp, konus=0):
     # gölge
     p.ell((70, 354, 230, 368), (0, 0, 0, 38), ol=False)
     # bacaklar
@@ -263,13 +285,17 @@ def _ciz(p, ifade, poz, kirp):
     if ifade not in ("kizgin", "ciddi"):
         p.ell((86, 148, 102, 158), BLUSH, ol=False)
         p.ell((198, 148, 214, 158), BLUSH, ol=False)
-    _agiz(p, 150, 166, agiz)
+    if konus:
+        _konus(p, 150, 166, konus, ifade)
+    else:
+        _agiz(p, 150, 166, agiz)
     _ekstra(p, ek)
 
 
-@lru_cache(maxsize=256)
-def tokmak(ifade="normal", poz="selam", boyut=300, kirp=False):
-    """Tokmak maskotunu şeffaf arka planlı RGBA görsel olarak döndürür."""
+@lru_cache(maxsize=1024)
+def tokmak(ifade="normal", poz="selam", boyut=300, kirp=False, konus=0):
+    """Tokmak maskotunu şeffaf arka planlı RGBA görsel olarak döndürür.
+    konus: 0 = ifadenin kendi ağzı, 1..3 = konuşma ağzı (dudak senkronu için)."""
     if ifade not in _IFADE:
         raise ValueError(f"Bilinmeyen ifade: {ifade}. Seçenekler: {IFADELER}")
     if poz not in POZLAR:
@@ -277,7 +303,7 @@ def tokmak(ifade="normal", poz="selam", boyut=300, kirp=False):
     sx = boyut / 300.0
     w, h = int(boyut * SS * 1.04), int(380 * sx * SS)
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    _ciz(_P(ImageDraw.Draw(im), SS * sx), ifade, poz, kirp)
+    _ciz(_P(ImageDraw.Draw(im), SS * sx), ifade, poz, kirp, konus)
     return im.resize((w // SS, h // SS), Image.LANCZOS)
 
 
